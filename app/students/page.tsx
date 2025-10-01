@@ -98,20 +98,19 @@ export default function StudentsPage() {
   const [answeredQuestions, setAnsweredQuestions] = useState<number[]>([])
   const [quizCompleted, setQuizCompleted] = useState(false)
   const [isTransitioning, setIsTransitioning] = useState(false)
+  const [showCongratulationsVideo, setShowCongratulationsVideo] = useState(false)
+  const [waitingForFinalVideo, setWaitingForFinalVideo] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
+  const congratsVideoRef = useRef<HTMLVideoElement>(null)
 
   useEffect(() => {
     const video = videoRef.current
     if (!video) return
 
-    // Add transition effect when score changes
     setIsTransitioning(true)
 
-    // Play the video after a brief transition
     setTimeout(() => {
-      video.play().catch(() => {
-        // Ignore autoplay errors
-      })
+      video.play().catch(() => {})
       setIsTransitioning(false)
     }, 300)
   }, [score])
@@ -137,7 +136,17 @@ export default function StudentsPage() {
       setSelectedAnswer(null)
       setShowExplanation(false)
     } else {
-      setQuizCompleted(true)
+      const finalScore = selectedAnswer === quizQuestions[currentQuestion].correctAnswer ? score + 1 : score
+
+      setWaitingForFinalVideo(true)
+      setSelectedAnswer(null)
+      setShowExplanation(false)
+
+      if (finalScore < 6) {
+        setTimeout(() => {
+          setQuizCompleted(true)
+        }, 2000)
+      }
     }
   }
 
@@ -148,6 +157,8 @@ export default function StudentsPage() {
     setScore(0)
     setAnsweredQuestions([])
     setQuizCompleted(false)
+    setShowCongratulationsVideo(false)
+    setWaitingForFinalVideo(false)
   }
 
   const getScoreMessage = () => {
@@ -180,6 +191,19 @@ export default function StudentsPage() {
     if (level >= 40) return "from-yellow-300 to-blue-400"
     if (level >= 20) return "from-orange-300 to-yellow-400"
     return "from-red-300 to-orange-400"
+  }
+
+  const handleVideoEnded = () => {
+    if (waitingForFinalVideo && score === 6) {
+      setShowCongratulationsVideo(true)
+      setTimeout(() => {
+        congratsVideoRef.current?.play()
+      }, 100)
+    }
+  }
+
+  const handleCongratulationsVideoEnded = () => {
+    setQuizCompleted(true)
   }
 
   if (quizCompleted) {
@@ -307,111 +331,128 @@ export default function StudentsPage() {
                 Ready to Protect Our Rivers
               </h1>
 
-              <div className="w-full max-w-3xl">
-                <h2 className="font-serif text-2xl md:text-3xl font-semibold mb-8 text-white text-center drop-shadow-md">
-                  {question.question}
-                </h2>
+              {!waitingForFinalVideo && (
+                <>
+                  <div className="w-full max-w-3xl">
+                    <h2 className="font-serif text-2xl md:text-3xl font-semibold mb-8 text-white text-center drop-shadow-md">
+                      {question.question}
+                    </h2>
 
-                <div className="grid grid-cols-2 gap-4 mb-8">
-                  {question.options.map((option, index) => {
-                    const isSelected = selectedAnswer === index
-                    const isCorrect = index === question.correctAnswer
-                    const showCorrect = showExplanation && isCorrect
-                    const showIncorrect = showExplanation && isSelected && !isCorrect
+                    <div className="grid grid-cols-2 gap-4 mb-8">
+                      {question.options.map((option, index) => {
+                        const isSelected = selectedAnswer === index
+                        const isCorrect = index === question.correctAnswer
+                        const showCorrect = showExplanation && isCorrect
+                        const showIncorrect = showExplanation && isSelected && !isCorrect
 
-                    return (
-                      <button
-                        key={index}
-                        onClick={() => handleAnswerSelect(index)}
-                        disabled={showExplanation}
-                        className={`p-5 rounded-2xl text-left transition-all duration-300 backdrop-blur-md ${
-                          showCorrect
-                            ? "bg-green-500/40 border-2 border-green-400"
-                            : showIncorrect
-                              ? "bg-red-500/40 border-2 border-red-400"
-                              : isSelected
-                                ? "bg-primary/40 border-2 border-primary"
-                                : "bg-white/20 hover:bg-white/30 border-2 border-white/30"
-                        } ${showExplanation ? "cursor-not-allowed" : "cursor-pointer hover:scale-102"}`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
+                        return (
+                          <button
+                            key={index}
+                            onClick={() => handleAnswerSelect(index)}
+                            disabled={showExplanation}
+                            className={`p-5 rounded-2xl text-left transition-all duration-300 backdrop-blur-md ${
                               showCorrect
-                                ? "bg-green-500 text-white"
+                                ? "bg-green-500/40 border-2 border-green-400"
                                 : showIncorrect
-                                  ? "bg-red-500 text-white"
+                                  ? "bg-red-500/40 border-2 border-red-400"
                                   : isSelected
-                                    ? "bg-primary text-primary-foreground"
-                                    : "bg-white/80 text-foreground"
-                            }`}
+                                    ? "bg-primary/40 border-2 border-primary"
+                                    : "bg-white/20 hover:bg-white/30 border-2 border-white/30"
+                            } ${showExplanation ? "cursor-not-allowed" : "cursor-pointer hover:scale-102"}`}
                           >
-                            {String.fromCharCode(65 + index)}
-                          </div>
-                          <span className="text-white font-semibold text-base drop-shadow">{option}</span>
-                        </div>
-                      </button>
-                    )
-                  })}
-                </div>
+                            <div className="flex items-center gap-3">
+                              <div
+                                className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
+                                  showCorrect
+                                    ? "bg-green-500 text-white"
+                                    : showIncorrect
+                                      ? "bg-red-500 text-white"
+                                      : isSelected
+                                        ? "bg-primary text-primary-foreground"
+                                        : "bg-white/80 text-foreground"
+                                }`}
+                              >
+                                {String.fromCharCode(65 + index)}
+                              </div>
+                              <span className="text-white font-semibold text-base drop-shadow">{option}</span>
+                            </div>
+                          </button>
+                        )
+                      })}
+                    </div>
 
-                {showExplanation && (
-                  <div className="mb-6 p-6 rounded-2xl bg-white/90 backdrop-blur-md border border-white/50 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    <h3 className="font-serif text-xl font-bold mb-3 text-foreground">
-                      {selectedAnswer === question.correctAnswer ? "Correct!" : "Not quite!"}
-                    </h3>
-                    <p className="text-muted-foreground leading-relaxed">{question.explanation}</p>
+                    {showExplanation && (
+                      <div className="mb-6 p-6 rounded-2xl bg-white/90 backdrop-blur-md border border-white/50 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <h3 className="font-serif text-xl font-bold mb-3 text-foreground">
+                          {selectedAnswer === question.correctAnswer ? "Correct!" : "Not quite!"}
+                        </h3>
+                        <p className="text-muted-foreground leading-relaxed">{question.explanation}</p>
+                      </div>
+                    )}
+
+                    <div className="flex justify-between items-center gap-4 mb-8">
+                      {!showExplanation ? (
+                        <>
+                          <div className="flex-1" />
+                          <button
+                            onClick={handleSubmitAnswer}
+                            disabled={selectedAnswer === null}
+                            className="px-10 py-4 rounded-full bg-primary text-primary-foreground font-bold text-lg hover:bg-primary/90 transition-all shadow-2xl hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            Submit
+                          </button>
+                          <div className="flex-1" />
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            onClick={handleSubmitAnswer}
+                            disabled
+                            className="px-10 py-4 rounded-full bg-primary/50 text-primary-foreground font-bold text-lg cursor-not-allowed opacity-50"
+                          >
+                            Submit
+                          </button>
+                          <button
+                            onClick={handleNextQuestion}
+                            className="px-10 py-4 rounded-full bg-accent text-accent-foreground font-bold text-lg hover:bg-accent/90 transition-all shadow-2xl hover:shadow-xl"
+                          >
+                            Next
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </div>
-                )}
-
-                <div className="flex justify-between items-center gap-4 mb-8">
-                  {!showExplanation ? (
-                    <>
-                      <div className="flex-1" />
-                      <button
-                        onClick={handleSubmitAnswer}
-                        disabled={selectedAnswer === null}
-                        className="px-10 py-4 rounded-full bg-primary text-primary-foreground font-bold text-lg hover:bg-primary/90 transition-all shadow-2xl hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        Submit
-                      </button>
-                      <div className="flex-1" />
-                    </>
-                  ) : (
-                    <>
-                      <button
-                        onClick={handleSubmitAnswer}
-                        disabled
-                        className="px-10 py-4 rounded-full bg-primary/50 text-primary-foreground font-bold text-lg cursor-not-allowed opacity-50"
-                      >
-                        Submit
-                      </button>
-                      <button
-                        onClick={handleNextQuestion}
-                        className="px-10 py-4 rounded-full bg-accent text-accent-foreground font-bold text-lg hover:bg-accent/90 transition-all shadow-2xl hover:shadow-xl"
-                      >
-                        Next
-                      </button>
-                    </>
-                  )}
-                </div>
-              </div>
+                </>
+              )}
 
               <div className="w-full max-w-3xl">
                 <div className="bg-white/10 backdrop-blur-md rounded-3xl p-6 border border-white/20">
                   <div className="relative w-full aspect-video rounded-2xl overflow-hidden border-4 border-white/30 shadow-2xl">
-                    <video
-                      ref={videoRef}
-                      key={score}
-                      src={waterLevelVideos[score]}
-                      className={`w-full h-full object-cover transition-opacity duration-500 ${
-                        isTransitioning ? "opacity-0" : "opacity-100"
-                      }`}
-                      muted
-                      playsInline
-                      autoPlay
-                      preload="auto"
-                    />
+                    {showCongratulationsVideo ? (
+                      <video
+                        ref={congratsVideoRef}
+                        src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Video%202025-10-01%20at%2007.20.34_07ae206a-XOLytyia1GtUZIyfVJsvs6LZsHznuT.mp4"
+                        className="w-full h-full object-cover"
+                        muted
+                        playsInline
+                        preload="auto"
+                        onEnded={handleCongratulationsVideoEnded}
+                      />
+                    ) : (
+                      <video
+                        ref={videoRef}
+                        key={score}
+                        src={waterLevelVideos[score]}
+                        className={`w-full h-full object-cover transition-opacity duration-500 ${
+                          isTransitioning ? "opacity-0" : "opacity-100"
+                        }`}
+                        muted
+                        playsInline
+                        autoPlay
+                        preload="auto"
+                        onEnded={handleVideoEnded}
+                      />
+                    )}
                     <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg">
                       <p className="text-2xl font-bold text-primary">
                         {score}/{quizQuestions.length}
