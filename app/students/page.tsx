@@ -81,13 +81,13 @@ const quizQuestions: Question[] = [
 ]
 
 const waterLevelVideos = [
-  "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Video%202025-10-01%20at%2006.04.49_2cee550e-IVJ2po42qcx8KrHyqvRLbrNO4S7bvQ.mp4",
-  "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Video%202025-10-01%20at%2006.05.16_cbaed6cd-EWdjU5xLBEOWM2S1mkgCzMuJH8ACJE.mp4",
-  "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Video%202025-10-01%20at%2006.32.08_daadbf1d-WvOLwB6bpGLpjZ9KN56st6bsHiubC2.mp4",
-  "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Video%202025-10-01%20at%2006.42.04_d54bc31b-8j9abU0hjEDNNY8Z250tHYAj5P7rnj.mp4",
-  "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Video%202025-10-01%20at%2006.17.25_a94a3204-ic93hMOKPYyNVrujVUHyf84qeYjRVc.mp4",
-  "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Video%202025-10-01%20at%2006.20.21_4505bd61-lPszJbiBTgwEwDDDRguezX51Fdw6by.mp4",
-  "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Video%202025-10-01%20at%2006.20.37_1f9547b0-CPLnlyre2KiuywN8WC5BOPIe1J23NT.mp4",
+  "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Video%202025-10-01%20at%2006.04.49_2cee550e-IVJ2po42qcx8KrHyqvRLbrNO4S7bvQ.mp4", // Empty/dry barrel
+  "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Video%202025-10-01%20at%2006.05.16_cbaed6cd-EWdjU5xLBEOWM2S1mkgCzMuJH8ACJE.mp4", // 1 correct answer
+  "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Video%202025-10-01%20at%2006.32.08_daadbf1d-WvOLwB6bpGLpjZ9KN56st6bsHiubC2.mp4", // 2 correct answers
+  "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Video%202025-10-01%20at%2006.42.04_d54bc31b-8j9abU0hjEDNNY8Z250tHYAj5P7rnj.mp4", // 3 correct answers
+  "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Video%202025-10-01%20at%2006.17.25_a94a3204-ic93hMOKPYyNVrujVUHyf84qeYjRVc.mp4", // 4 correct answers
+  "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Video%202025-10-01%20at%2006.20.21_4505bd61-lPszJbiBTgwEwDDDRguezX51Fdw6by.mp4", // 5 correct answers
+  "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WhatsApp%20Video%202025-10-01%20at%2006.20.37_1f9547b0-CPLnlyre2KiuywN8WC5BOPIe1J23NT.mp4", // 6 correct answers - full/overflowing
 ]
 
 export default function StudentsPage() {
@@ -98,18 +98,20 @@ export default function StudentsPage() {
   const [answeredQuestions, setAnsweredQuestions] = useState<number[]>([])
   const [quizCompleted, setQuizCompleted] = useState(false)
   const [isTransitioning, setIsTransitioning] = useState(false)
-  const [showPerfectImage, setShowPerfectImage] = useState(false)
-  const [waitingForFinalVideo, setWaitingForFinalVideo] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
 
   useEffect(() => {
     const video = videoRef.current
     if (!video) return
 
+    // Add transition effect when score changes
     setIsTransitioning(true)
 
+    // Play the video after a brief transition
     setTimeout(() => {
-      video.play().catch(() => {})
+      video.play().catch(() => {
+        // Ignore autoplay errors
+      })
       setIsTransitioning(false)
     }, 300)
   }, [score])
@@ -135,21 +137,7 @@ export default function StudentsPage() {
       setSelectedAnswer(null)
       setShowExplanation(false)
     } else {
-      const finalScore = selectedAnswer === quizQuestions[currentQuestion].correctAnswer ? score + 1 : score
-      if (finalScore === 6) {
-        setWaitingForFinalVideo(true)
-      } else {
-        setQuizCompleted(true)
-      }
-    }
-  }
-
-  const handleVideoEnd = () => {
-    if (waitingForFinalVideo && score === 6) {
-      setShowPerfectImage(true)
-      setTimeout(() => {
-        setQuizCompleted(true)
-      }, 5000)
+      setQuizCompleted(true)
     }
   }
 
@@ -160,8 +148,6 @@ export default function StudentsPage() {
     setScore(0)
     setAnsweredQuestions([])
     setQuizCompleted(false)
-    setShowPerfectImage(false)
-    setWaitingForFinalVideo(false)
   }
 
   const getScoreMessage = () => {
@@ -425,25 +411,12 @@ export default function StudentsPage() {
                       playsInline
                       autoPlay
                       preload="auto"
-                      onEnded={handleVideoEnd}
                     />
                     <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg">
                       <p className="text-2xl font-bold text-primary">
                         {score}/{quizQuestions.length}
                       </p>
                     </div>
-                    {showPerfectImage && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/20 animate-in fade-in duration-[3000ms]">
-                        <img
-                          src="/perfect-score-message.jpg"
-                          alt="Perfect Score Congratulations"
-                          className="w-full h-full object-contain animate-in fade-in zoom-in-95 duration-[3000ms]"
-                          style={{
-                            animation: "fadeInFull 3s ease-in-out forwards",
-                          }}
-                        />
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>
@@ -451,16 +424,6 @@ export default function StudentsPage() {
           </div>
         </section>
       </div>
-      <style jsx>{`
-        @keyframes fadeInFull {
-          0% {
-            opacity: 0.2;
-          }
-          100% {
-            opacity: 1;
-          }
-        }
-      `}</style>
     </main>
   )
 }
