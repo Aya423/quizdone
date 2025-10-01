@@ -98,17 +98,20 @@ export default function StudentsPage() {
   const [answeredQuestions, setAnsweredQuestions] = useState<number[]>([])
   const [quizCompleted, setQuizCompleted] = useState(false)
   const [isTransitioning, setIsTransitioning] = useState(false)
-  const [showPerfectImage, setShowPerfectImage] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
 
   useEffect(() => {
     const video = videoRef.current
     if (!video) return
 
+    // Add transition effect when score changes
     setIsTransitioning(true)
 
+    // Play the video after a brief transition
     setTimeout(() => {
-      video.play().catch(() => {})
+      video.play().catch(() => {
+        // Ignore autoplay errors
+      })
       setIsTransitioning(false)
     }, 300)
   }, [score])
@@ -135,11 +138,6 @@ export default function StudentsPage() {
       setShowExplanation(false)
     } else {
       setQuizCompleted(true)
-      if (score === 6 || (score === 5 && selectedAnswer === quizQuestions[currentQuestion].correctAnswer)) {
-        setTimeout(() => {
-          setShowPerfectImage(true)
-        }, 1000)
-      }
     }
   }
 
@@ -150,7 +148,6 @@ export default function StudentsPage() {
     setScore(0)
     setAnsweredQuestions([])
     setQuizCompleted(false)
-    setShowPerfectImage(false)
   }
 
   const getScoreMessage = () => {
@@ -415,22 +412,6 @@ export default function StudentsPage() {
                       autoPlay
                       preload="auto"
                     />
-                    {score === 6 && (
-                      <div
-                        className={`absolute inset-0 flex items-center justify-center transition-opacity duration-[2000ms] ${
-                          showPerfectImage ? "opacity-100" : "opacity-0"
-                        }`}
-                        style={{
-                          animation: showPerfectImage ? "fadeInSlow 3s ease-in-out forwards" : "none",
-                        }}
-                      >
-                        <img
-                          src="/perfect-score-message.jpg"
-                          alt="Perfect Score"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    )}
                     <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg">
                       <p className="text-2xl font-bold text-primary">
                         {score}/{quizQuestions.length}
@@ -443,20 +424,6 @@ export default function StudentsPage() {
           </div>
         </section>
       </div>
-
-      <style jsx>{`
-        @keyframes fadeInSlow {
-          0% {
-            opacity: 0;
-          }
-          50% {
-            opacity: 0.3;
-          }
-          100% {
-            opacity: 1;
-          }
-        }
-      `}</style>
     </main>
   )
 }
