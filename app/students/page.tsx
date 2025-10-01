@@ -305,18 +305,18 @@ export default function StudentsPage() {
         </div>
 
         <section className="pt-32 pb-16 px-4">
-          <div className="container mx-auto max-w-7xl">
-            <div className="flex flex-col lg:flex-row gap-8 items-start justify-between">
-              <div className="w-full lg:w-[55%] flex flex-col">
-                <h1 className="font-serif text-5xl md:text-6xl font-bold text-white mb-8 text-center lg:text-left drop-shadow-lg">
-                  Ready to Protect Our Rivers
-                </h1>
+          <div className="container mx-auto max-w-5xl">
+            <div className="flex flex-col items-center gap-8">
+              <h1 className="font-serif text-4xl md:text-5xl font-bold text-white text-center drop-shadow-lg">
+                Ready to Protect Our Rivers
+              </h1>
 
-                <h2 className="font-serif text-2xl md:text-3xl font-semibold mb-8 text-white text-center lg:text-left drop-shadow-md">
+              <div className="w-full max-w-3xl">
+                <h2 className="font-serif text-2xl md:text-3xl font-semibold mb-8 text-white text-center drop-shadow-md">
                   {question.question}
                 </h2>
 
-                <div className="w-full space-y-4 mb-8">
+                <div className="grid grid-cols-2 gap-4 mb-8">
                   {question.options.map((option, index) => {
                     const isSelected = selectedAnswer === index
                     const isCorrect = index === question.correctAnswer
@@ -328,7 +328,7 @@ export default function StudentsPage() {
                         key={index}
                         onClick={() => handleAnswerSelect(index)}
                         disabled={showExplanation}
-                        className={`w-full p-5 rounded-2xl text-left transition-all duration-300 backdrop-blur-md ${
+                        className={`p-5 rounded-2xl text-left transition-all duration-300 backdrop-blur-md ${
                           showCorrect
                             ? "bg-green-500/40 border-2 border-green-400"
                             : showIncorrect
@@ -338,9 +338,9 @@ export default function StudentsPage() {
                                 : "bg-white/20 hover:bg-white/30 border-2 border-white/30"
                         } ${showExplanation ? "cursor-not-allowed" : "cursor-pointer hover:scale-102"}`}
                       >
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-3">
                           <div
-                            className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
+                            className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
                               showCorrect
                                 ? "bg-green-500 text-white"
                                 : showIncorrect
@@ -352,7 +352,7 @@ export default function StudentsPage() {
                           >
                             {String.fromCharCode(65 + index)}
                           </div>
-                          <span className="text-white font-semibold text-lg drop-shadow">{option}</span>
+                          <span className="text-white font-semibold text-base drop-shadow">{option}</span>
                         </div>
                       </button>
                     )
@@ -368,7 +368,7 @@ export default function StudentsPage() {
                   </div>
                 )}
 
-                <div className="flex justify-center lg:justify-start">
+                <div className="flex justify-center mb-8">
                   {!showExplanation ? (
                     <button
                       onClick={handleSubmitAnswer}
@@ -386,44 +386,24 @@ export default function StudentsPage() {
                 </div>
               </div>
 
-              <div className="w-full lg:w-[40%] lg:sticky lg:top-32">
-                <div className="bg-white/10 backdrop-blur-md rounded-3xl p-8 border border-white/20">
-                  <div className="text-center mb-8">
-                    <p className="text-sm text-white/80 mb-1">Current Score</p>
-                    <p className="text-4xl font-bold text-white drop-shadow-lg">
-                      {score} / {answeredQuestions.length || 0}
-                    </p>
-                  </div>
-
-                  <div className="flex flex-col items-center gap-6">
-                    <div className="relative w-full max-w-xs aspect-[9/16] rounded-2xl overflow-hidden border-4 border-white/30 shadow-2xl">
-                      <video
-                        ref={videoRef}
-                        key={score} // Force re-render when score changes
-                        src={waterLevelVideos[score]}
-                        className={`w-full h-full object-cover transition-opacity duration-500 ${
-                          isTransitioning ? "opacity-0" : "opacity-100"
-                        }`}
-                        muted
-                        playsInline
-                        autoPlay
-                        preload="auto"
-                      />
-                      <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg">
-                        <p className="text-2xl font-bold text-primary">{Math.round(getRiverLevel())}%</p>
-                      </div>
-                    </div>
-
-                    <div className="text-center">
-                      <p className="text-xl font-bold text-white mb-2 drop-shadow">{getRiverStatus()}</p>
-                      <p className="text-sm text-white/80">
-                        {getRiverLevel() >= 80
-                          ? "Keep up the great work!"
-                          : getRiverLevel() >= 60
-                            ? "You're doing well!"
-                            : getRiverLevel() >= 40
-                              ? "Keep learning!"
-                              : "Every answer helps!"}
+              <div className="w-full max-w-3xl">
+                <div className="bg-white/10 backdrop-blur-md rounded-3xl p-6 border border-white/20">
+                  <div className="relative w-full aspect-video rounded-2xl overflow-hidden border-4 border-white/30 shadow-2xl">
+                    <video
+                      ref={videoRef}
+                      key={score}
+                      src={waterLevelVideos[score]}
+                      className={`w-full h-full object-cover transition-opacity duration-500 ${
+                        isTransitioning ? "opacity-0" : "opacity-100"
+                      }`}
+                      muted
+                      playsInline
+                      autoPlay
+                      preload="auto"
+                    />
+                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg">
+                      <p className="text-2xl font-bold text-primary">
+                        {score}/{quizQuestions.length}
                       </p>
                     </div>
                   </div>
